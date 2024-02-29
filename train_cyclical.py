@@ -75,7 +75,9 @@ def get_lr(optimizer):
 
 def run_one_epoch(loader, model, criterion, optimizer=None, scheduler=None,
         grad_acc_steps=0, assess=False):
-    device='cuda' if next(model.parameters()).is_cuda else 'cpu'
+    has_gpu = torch.cuda.is_available()
+    has_mps = torch.backends.mps.is_built()
+    device = "mps" if has_mps else "cuda" if has_gpu else "cpu"
     train = optimizer is not None  # if we are in training mode there will be an optimizer and train=True here
 
     # if train:
@@ -189,7 +191,7 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, scheduler
                 save_model(exp_path, model, optimizer)
 
     del model
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()
     return best_auc, best_dice, best_cycle
 
 if __name__ == '__main__':
@@ -209,6 +211,7 @@ if __name__ == '__main__':
         print('* Training on device '.format(args.device))
         device = torch.device("cuda")
     else:  #cpu
+        print('* Training on device '.format(args.device))
         device = torch.device(args.device)
 
     # reproducibility

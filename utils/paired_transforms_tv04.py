@@ -18,6 +18,8 @@ from torchvision.transforms import functional as F
 import torchvision.transforms as T
 import pkg_resources
 import distutils.version
+import PIL
+
 TORCHVISION_VERSION = distutils.version.LooseVersion(pkg_resources.require('torchvision')[0].version)
 
 if sys.version_info < (3, 3):
@@ -1078,7 +1080,7 @@ class RandomRotation(object):
 
     """
 
-    def __init__(self, degrees, resample=False, resample_tg=False, interpolation=T.InterpolationMode.BILINEAR,
+    def __init__(self, degrees, resample=PIL.Image.NEAREST, resample_tg=PIL.Image.NEAREST, interpolation=T.InterpolationMode.BILINEAR,
                  interpolation_tg = T.InterpolationMode.NEAREST, expand=False, center=None, fill=0, fill_tg=(0,)): #
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
@@ -1131,10 +1133,10 @@ class RandomRotation(object):
 
         else:
             if target is not None:
-                return F.rotate(img, angle, self.interpolation, self.expand, self.center, self.fill, resample=None), \
-                       F.rotate(target, angle, self.interpolation_tg, self.expand, self.center, self.fill_tg, resample=None) #
+                return F.rotate(img, angle, self.interpolation, self.expand, self.center, self.fill), \
+                       F.rotate(target, angle, self.interpolation_tg, self.expand, self.center, self.fill_tg)
                        # resample = False is by default nearest, appropriate for targets
-            return F.rotate(img, angle, self.interpolation, self.expand, self.center, self.fill_tg, resample=None)
+            return F.rotate(img, angle, self.interpolation, self.expand, self.center, self.fill)
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '(degrees={0}'.format(self.degrees)
@@ -1176,7 +1178,7 @@ class RandomAffine(object):
     """
 
     def __init__(self, degrees, translate=None, scale=None, shear=None,
-                 resample=None, resample_tg=None, fill=0):#fillcolor=0):
+                 resample=PIL.Image.NEAREST, resample_tg=PIL.Image.NEAREST, fill=0):#fillcolor=0):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
                 raise ValueError("If degrees is a single number, it must be positive.")
@@ -1266,10 +1268,10 @@ class RandomAffine(object):
         """
         ret = self.get_params(self.degrees, self.translate, self.scale, self.shear, img.size)
         if target is not None:
-            return F.affine(img, *ret, resample=self.resample, fill=self.fill), \
-                   F.affine(target, *ret, resample=self.resample_tg, fill=self.fill)
+            return F.affine(img, *ret, interpolation=self.resample, fill=self.fill), \
+                   F.affine(target, *ret, interpolation=self.resample_tg, fill=self.fill)
                    # resample = False is by default nearest, appropriate for targets
-        return F.affine(img, *ret, resample=self.resample, fill=self.fill)
+        return F.affine(img, *ret, interpolation=self.resample, fill=self.fill)
 
     def __repr__(self):
         s = '{name}(degrees={degrees}'

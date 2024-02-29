@@ -49,9 +49,11 @@ def get_circ(binary):
 
     def cost(params):
         x0, y0, r = params
-        coords = draw.circle(y0, x0, r, shape=image.shape)
+        rr, cc = draw.disk((y0, x0), r)
+        rr = np.clip(rr, 0, image.shape[0]-1)
+        cc = np.clip(cc, 0, image.shape[1]-1)
         template = np.zeros_like(image)
-        template[coords] = 1
+        template[rr, cc] = 1
         return -np.sum(template == image)
 
     x0, y0, r = optimize.fmin(cost, (x0, y0, r))
@@ -105,7 +107,9 @@ def flip_lrud(tens):
 
 def create_pred(model, tens, mask, coords_crop, original_sz, bin_thresh, tta='no'):
     act = torch.sigmoid if model.n_classes == 1 else torch.nn.Softmax(dim=0)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    has_gpu = torch.cuda.is_available()
+    has_mps = torch.backends.mps.is_built()
+    device = "mps" if has_mps else "gpu" if has_gpu else "cpu"
     with torch.no_grad():
         logits = model(tens.unsqueeze(dim=0).to(device)).squeeze(dim=0)
     pred = act(logits)

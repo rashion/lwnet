@@ -10,11 +10,13 @@ __pycache__
 *.pyc
 
 
-data
+data/
 
 # Ignore result directories
 # experiments/
 results/
+input/
+output/
 
 instructions_vessels_training_testing
 manuscript_tmi
@@ -22,3 +24,7 @@ manuscript_arxiv
 pre_generated_results
 new_experiments.sh
 new_experiments_2.sh
+
+# Ignore macos files
+.DS_Store
+__MACOSX
